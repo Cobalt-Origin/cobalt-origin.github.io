@@ -25,18 +25,20 @@ $icons = @{
     linkedin = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 10v7"/></svg>'
 }
 
-# Small logo for the contact photo and the phone home-screen icon (made once from the big PNG)
+# Small logo for the contact photo and the phone home-screen icon, rendered from assets/logo.svg by Edge
+# (made once; delete it to remake). logo.svg's viewBox is centred halfway between the logo's outline
+# and its target (the open C looks left-heavy otherwise) and is wide enough that round crops
+# (the page, phone contacts) never cut its corners.
 $logo256 = Join-Path $root 'assets\logo-256.png'
 if (-not (Test-Path $logo256)) {
-    Add-Type -AssemblyName System.Drawing
-    $src = [System.Drawing.Image]::FromFile((Join-Path $root 'assets\logo.png'))
-    $bmp = New-Object System.Drawing.Bitmap 256, 256
-    $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.InterpolationMode = 'HighQualityBicubic'
-    $g.Clear([System.Drawing.Color]::White)
-    $g.DrawImage($src, 0, 0, 256, 256)
-    $bmp.Save($logo256, [System.Drawing.Imaging.ImageFormat]::Png)
-    $g.Dispose(); $bmp.Dispose(); $src.Dispose()
+    $edge = @("${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe",
+              "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+    $svgUrl = ([Uri](Join-Path $root 'assets\logo.svg')).AbsoluteUri
+    $page = Join-Path $env:TEMP 'cobalt-logo-256.html'
+    [IO.File]::WriteAllText($page, "<html><body style=""margin:0;background:#fff""><img src=""$svgUrl"" style=""display:block;width:256px;height:256px""></body></html>")
+    & $edge --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=256,256 "--screenshot=$logo256" ([Uri]$page).AbsoluteUri 2>$null
+    for ($i = 0; $i -lt 20 -and -not (Test-Path $logo256); $i++) { Start-Sleep -Milliseconds 500 }
+    Remove-Item $page
 }
 $photo = [Convert]::ToBase64String([IO.File]::ReadAllBytes($logo256))
 
