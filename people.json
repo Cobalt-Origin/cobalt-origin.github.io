@@ -1,0 +1,14 @@
+[
+  {
+    "slug": "al-jinkerson",
+    "first": "Al",
+    "last": "Jinkerson",
+    "title": "President",
+    "company": "Cobalt Origin Inc.",
+    "mobile": "+1 519 330 1390",
+    "email": "al@cobaltorigin.ca",
+    "website": "https://cobaltorigin.ca",
+    "linkedin": "https://www.linkedin.com/in/alan-jinkerson/",
+    "hide": ["email", "website"]
+  }
+]
